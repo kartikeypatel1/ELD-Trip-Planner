@@ -46,9 +46,8 @@ if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
     raise ValueError("A production DJANGO_SECRET_KEY must be configured.")
 
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-    if host.strip()
+    "eld-trip-planner-1e14.onrender.com",
+    ".onrender.com",  # covers preview/staging domains too
 ]
 
 
