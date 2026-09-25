@@ -13,8 +13,10 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 from datetime import timedelta
 from dotenv import load_dotenv
+from decouple import config
 
 
 # ============================================================
@@ -36,19 +38,16 @@ load_dotenv(BASE_DIR / ".env")
 # SECURITY
 # ============================================================
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "")
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-
+SECRET_KEY = config("DJANGO_SECRET_KEY")
+DEBUG = config("DEBUG",cast=bool)
 if not SECRET_KEY:
     raise ValueError("DJANGO_SECRET_KEY is missing. Add it to the environment.")
 
 if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
     raise ValueError("A production DJANGO_SECRET_KEY must be configured.")
 
-ALLOWED_HOSTS = [
-    "eld-trip-planner-1e14.onrender.com",
-    ".onrender.com",  # covers preview/staging domains too
-]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS").split(",")  # covers preview/staging domains too
+
 
 
 # ============================================================
@@ -138,6 +137,8 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", "5432"),
     }
 }
+
+DATABASES["default"]=dj_database_url.parse(config("DATABASE_URL"))
 
 
 # ============================================================
