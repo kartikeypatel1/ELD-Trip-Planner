@@ -2,6 +2,60 @@
 
 A full-stack **Electronic Logging Device (ELD) Trip Planner** built with **React + Django** that helps truck drivers plan long-distance trips while automatically generating **FMCSA-compliant Hours of Service (HOS) schedules and daily driver log sheets**.
 
+## Deployment
+
+The repository includes deployment configuration for Render and Vercel:
+
+- `render.yaml` configures the Django backend as a Render Web Service.
+- `frontend/vercel.json` enables client-side routing on Vercel.
+
+### Render backend
+
+1. Create a Render PostgreSQL database in the same region as the web service.
+2. Create a Web Service from this repository, or use **Blueprint** and select `render.yaml`.
+3. If configuring the service manually, set **Root Directory** to `backend`.
+4. Use these commands if Render does not read the blueprint:
+
+```text
+Build: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --noinput
+Start: gunicorn core.wsgi:application --bind 0.0.0.0:$PORT
+```
+
+5. Set these Render environment variables:
+
+```text
+DEBUG=False
+DJANGO_SECRET_KEY=<new-random-production-secret>
+ORS_API_KEY=<your-openrouteservice-key>
+ALLOWED_HOSTS=<service-name>.onrender.com
+CORS_ALLOWED_ORIGINS=https://<frontend>.vercel.app
+CSRF_TRUSTED_ORIGINS=https://<frontend>.vercel.app
+DB_NAME=<render-postgres-database-name>
+DB_USER=<render-postgres-user>
+DB_PASSWORD=<render-postgres-password>
+DB_HOST=<render-postgres-internal-hostname>
+DB_PORT=5432
+```
+
+Do not upload a local `.env` file to Render. The database host must be the
+internal hostname shown on the Render PostgreSQL **Connect** page.
+
+### Vercel frontend
+
+1. Import the repository into Vercel.
+2. Set the project root directory to `frontend`.
+3. Use `npm run build` as the build command and `dist` as the output directory.
+4. Add this environment variable:
+
+```text
+VITE_API_URL=https://<service-name>.onrender.com
+```
+
+Do not append `/api`; the frontend already includes `/api` in its request paths.
+After the Vercel deployment, add its exact URL to Render's
+`CORS_ALLOWED_ORIGINS` and `CSRF_TRUSTED_ORIGINS` variables, then redeploy the
+backend.
+
 The application takes the driver's current location, pickup location, and drop-off location, calculates the actual driving route, estimates travel time, plans required breaks/rest/fuel stops, and converts the complete trip into daily ELD log sheets.
 
 ---
